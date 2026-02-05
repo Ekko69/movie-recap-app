@@ -176,6 +176,7 @@ fun DetailScreen(
     var isVideoVisible by remember { mutableStateOf(false) }
     var isPlayerPlaying by remember { mutableStateOf(false) }
     var showUnlockDialog by remember { mutableStateOf(false) }
+    var shouldEnterFullscreenAfterAd by remember { mutableStateOf(false) }
     var areControlsVisible by remember { mutableStateOf(true) }
 
     // Subtitle Sync State
@@ -363,7 +364,10 @@ fun DetailScreen(
 
     if (showUnlockDialog) {
         com.threepointogames.movierecap.ui.components.UnlockDialog(
-            onDismiss = { showUnlockDialog = false },
+            onDismiss = { 
+                showUnlockDialog = false
+                shouldEnterFullscreenAfterAd = false
+            },
             onUnlock = {
                 showUnlockDialog = false
                 val activity = context as? android.app.Activity
@@ -380,6 +384,11 @@ fun DetailScreen(
                         )
                         isVideoVisible = true
                         isPlayerPlaying = true
+                        // Enter fullscreen if triggered from fullscreen button
+                        if (shouldEnterFullscreenAfterAd) {
+                            isFullscreen = true
+                            shouldEnterFullscreenAfterAd = false
+                        }
                     }
                 }
             }
@@ -604,11 +613,31 @@ fun DetailScreen(
                         // Fullscreen Button
                         Button(
                             onClick = {
-                                // Fullscreen Button Click
-                                // Direct action, no ad (Interstitial handled on entry)
-                                isVideoVisible = true
-                                isPlayerPlaying = true
-                                isFullscreen = true
+                                // Fullscreen Button Click - Check for Ad
+                                if (!isVideoVisible) {
+                                    // Check Ad Readiness
+                                    if (com.threepointogames.movierecap.util.AdManager.isAdReady()) {
+                                        shouldEnterFullscreenAfterAd = true
+                                        showUnlockDialog = true
+                                    } else {
+                                        // No Ad ready (or rate limit), enter fullscreen directly
+                                        com.threepointogames.movierecap.util.AnalyticsManager.logVideoStart(
+                                            movie.id,
+                                            movie.title
+                                        )
+                                        // Add to Watch History
+                                        com.threepointogames.movierecap.util.WatchHistoryManager.saveMovieId(
+                                            context,
+                                            movie.id
+                                        )
+                                        isVideoVisible = true
+                                        isPlayerPlaying = true
+                                        isFullscreen = true
+                                    }
+                                } else {
+                                    // Video already visible, just toggle fullscreen
+                                    isFullscreen = true
+                                }
                             },
                             modifier = Modifier
                                 .size(50.dp),
@@ -621,6 +650,7 @@ fun DetailScreen(
                         ) {
                             Icon(FullscreenIcon, contentDescription = "Fullscreen")
                         }
+
 
                         // Favorite Button
                         val scale by animateFloatAsState(
