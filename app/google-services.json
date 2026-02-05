@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "289674950368",
+    "firebase_url": "https://movie-recap-1306e-default-rtdb.firebaseio.com",
+    "project_id": "movie-recap-1306e",
+    "storage_bucket": "movie-recap-1306e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:289674950368:android:3d177bbdc31216d7f18285",
+        "android_client_info": {
+          "package_name": "com.threepointogames.movierecap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyqI3PGfoEmYv74dN-cEoKfPUH1yCsBUQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

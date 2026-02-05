@@ -1,0 +1,144 @@
+{
+  "movies": [
+    {
+      "id": "e7b8fdf2-4c3a-4f61-9c62-d4ae5b7d8a8f",
+      "videoURL": "https://firebasestorage.googleapis.com/v0/b/movie-recap-1306e.firebasestorage.app/o/movie_recap_01.mp4?alt=media&token=97c9b3d7-0137-4957-ad50-0100428fd0e1",
+      "thumbnail": "https://picsum.photos/id/1018/400/225",
+      "title": "Big Buck Bunny",
+      "year": 2008,
+      "duration": "10m 34s",
+      "category": "Top Picks",
+      "description": "A classic open-source animated short about a gentle rabbit dealing with mischievous forest creatures."
+    },
+    {
+      "id": "a5f9c3ba-1b34-4e0f-993f-2c1eae54f9b3",
+      "videoURL": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+      "thumbnail": "https://picsum.photos/id/1025/400/225",
+      "title": "Elephant's Dream",
+      "year": 2006,
+      "duration": "10m 53s",
+      "category": "Top Picks",
+      "description": "A surreal animated film exploring imagination, machines, and abstract storytelling."
+    },
+    {
+      "id": "d4c11f19-7e92-4a71-8871-7253c2d9e8fc",
+      "videoURL": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+      "thumbnail": "https://picsum.photos/id/1033/400/225",
+      "title": "Sintel",
+      "year": 2010,
+      "duration": "14m 48s",
+      "category": "Top Picks",
+      "description": "An emotional fantasy short following a young girl searching for her lost dragon companion."
+    },
+    {
+      "id": "8a207c65-0f7f-4399-b2c3-759e66c908ed",
+      "videoURL": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+      "thumbnail": "https://picsum.photos/id/1040/400/225",
+      "title": "Tears of Steel",
+      "year": 2012,
+      "duration": "12m 14s",
+      "category": "New",
+      "description": "A sci-fi short blending live action and CGI, set in a dystopian future."
+    },
+    {
+      "id": "f1e6c27b-3d5b-4b88-8c94-1b2e541f9f72",
+      "videoURL": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      "thumbnail": "https://picsum.photos/id/1052/400/225",
+      "title": "For Bigger Blazes",
+      "year": 2017,
+      "duration": "15m 00s",
+      "category": "New",
+      "description": "A high-energy sample video commonly used for testing streaming and playback features."
+    },
+    {
+      "id": "b3e98b7d-9a6e-4d7c-9b8b-1e4f6d4a9c01",
+      "videoURL": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+      "thumbnail": "https://picsum.photos/id/1060/400/225",
+      "title": "For Bigger Escapes",
+      "year": 2016,
+      "duration": "11m 20s",
+      "category": "All",
+      "description": "A fast-paced recap showcasing travel, adventure, and cinematic visuals."
+    },
+    {
+      "id": "6f27d1aa-cc29-4b68-ae9d-9a2c0b4e3a92",
+      "videoURL": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+      "thumbnail": "https://picsum.photos/id/1074/400/225",
+      "title": "For Bigger Fun",
+      "year": 2016,
+      "duration": "9m 45s",
+      "category": "All",
+      "description": "A lighthearted short designed to test video quality and color accuracy."
+    },
+    {
+      "id": "0c91d8c3-0a62-4d73-bb75-2e17c54f9b81",
+      "videoURL": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+      "thumbnail": "https://picsum.photos/id/1084/400/225",
+      "title": "For Bigger Joyrides",
+      "year": 2015,
+      "duration": "10m 10s",
+      "category": "All",
+      "description": "A dynamic montage focused on speed, motion, and cinematic excitement."
+    },
+    {
+      "id": "9fae12b7-9d91-4c18-bf3c-8aaf1d6a5b23",
+      "videoURL": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+      "thumbnail": "https://picsum.photos/id/109/400/225",
+      "title": "For Bigger Meltdowns",
+      "year": 2014,
+      "duration": "13m 05s",
+      "category": "All",
+      "description": "A dramatic short emphasizing emotional tension and visual stress tests."
+    },
+    {
+      "id": "45db6d92-0a2c-4bda-9d65-1f8b02c2ad45",
+      "videoURL": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
+      "thumbnail": "https://picsum.photos/id/110/400/225",
+      "title": "Subaru Outback Adventure",
+      "year": 2013,
+      "duration": "12m 00s",
+      "category": "All",
+      "description": "An automotive-focused recap highlighting performance on city and off-road terrain."
+    },
+    {
+      "id": "c12e44c9-2b5a-43cf-88b3-f1a72b5b8e09",
+      "videoURL": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
+      "thumbnail": "https://picsum.photos/id/111/400/225",
+      "title": "Volkswagen GTI Review",
+      "year": 2014,
+      "duration": "11m 40s",
+      "category": "New",
+      "description": "A compact recap reviewing performance, design, and driving experience."
+    },
+    {
+      "id": "8d3f49b0-58c5-4d7e-9bb7-fbfa7c2f4c11",
+      "videoURL": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+      "thumbnail": "https://picsum.photos/id/112/400/225",
+      "title": "Bullrun Journey",
+      "year": 2012,
+      "duration": "14m 30s",
+      "category": "Top Picks",
+      "description": "A road-trip themed short capturing speed, camaraderie, and competition."
+    },
+    {
+      "id": "ab21ef99-5f1e-4b88-94f4-5c0c71c8f8d7",
+      "videoURL": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
+      "thumbnail": "https://picsum.photos/id/113/400/225",
+      "title": "What Car Can You Get?",
+      "year": 2011,
+      "duration": "13m 15s",
+      "category": "All",
+      "description": "A practical and entertaining recap focused on budget-friendly car options."
+    },
+    {
+      "id": "7eab6a88-89d7-4f7f-b0c9-8b6f1c3e2d90",
+      "videoURL": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+      "thumbnail": "https://picsum.photos/id/114/400/225",
+      "title": "Big Buck Bunny Recap",
+      "year": 2008,
+      "duration": "9m 50s",
+      "category": "New",
+      "description": "A shorter recap version highlighting the funniest and most memorable scenes."
+    }
+  ]
+}
