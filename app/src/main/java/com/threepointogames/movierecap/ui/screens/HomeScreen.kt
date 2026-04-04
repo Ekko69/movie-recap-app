@@ -101,6 +101,7 @@ fun HomeScreen(
     // Search State
     var isSearchActive by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+    var showRemoveAdsDialog by remember { mutableStateOf(false) }
 
     // Analytics: Log Screen View
     val context = LocalContext.current
@@ -277,7 +278,7 @@ fun HomeScreen(
                                 )
                             }
 
-                            IconButton(onClick = { /* TODO */ }) {
+                            IconButton(onClick = { showRemoveAdsDialog = true }) {
                                 androidx.compose.foundation.Image(
                                     painter = androidx.compose.ui.res.painterResource(id = com.threepointogames.movierecap.R.drawable.header_icon),
                                     contentDescription = "Profile",
@@ -294,18 +295,27 @@ fun HomeScreen(
             }
         }
     ) { paddingValues ->
+        // Remove Ads dialog
+        if (showRemoveAdsDialog) {
+            com.threepointogames.movierecap.ui.components.RemoveAdsDialog(
+                onDismiss = { showRemoveAdsDialog = false }
+            )
+        }
+
         if (!isSearchActive) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-            // Banner Ad Section
-            item(key = "banner_ad") {
-                com.threepointogames.movierecap.ui.components.ReusableAdMobBanner(
-                    adView = adView,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+            // Banner Ad Section — hidden for ad-free users
+            if (!com.threepointogames.movierecap.util.PurchaseManager.isAdFree) {
+                item(key = "banner_ad") {
+                    com.threepointogames.movierecap.ui.components.ReusableAdMobBanner(
+                        adView = adView,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
             }
 
             // 0. Hero Section (Random)

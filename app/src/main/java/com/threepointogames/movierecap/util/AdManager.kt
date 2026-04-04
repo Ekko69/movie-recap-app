@@ -3,6 +3,7 @@ package com.threepointogames.movierecap.util
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import com.threepointogames.movierecap.util.PurchaseManager
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
@@ -25,6 +26,8 @@ object AdManager {
     private val adShownTimestamps = mutableListOf<Long>()
 
     fun loadInterstitial(context: Context) {
+        if (PurchaseManager.isAdFree) return
+
         // Prevent multiple simultaneous loads, but allow retry if ad is null
         if (isAdLoading) {
             Log.d(TAG, "Ad is already loading. Skipping request.")
@@ -94,6 +97,11 @@ object AdManager {
     }
 
     fun showInterstitial(activity: Activity, onAdDismissed: () -> Unit) {
+        if (PurchaseManager.isAdFree) {
+            onAdDismissed()
+            return
+        }
+
         // 1. Check if Ad is Loaded
         if (interstitialAd == null) {
             Log.d(TAG, "showInterstitial: Ad is NOT ready. Triggering load.")
