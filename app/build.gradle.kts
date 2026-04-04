@@ -85,7 +85,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-ads:22.6.0")
 
     // Google Play Billing
-    implementation("com.android.billingclient:billing-ktx:6.2.1")
+    implementation("com.android.billingclient:billing-ktx:6.1.0")
 
     // Firebase Analytics
     implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
