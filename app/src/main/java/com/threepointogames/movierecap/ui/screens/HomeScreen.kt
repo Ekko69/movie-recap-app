@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -211,6 +212,7 @@ fun HomeScreen(
                      modifier = Modifier
                          .fillMaxWidth()
                          .background(MaterialTheme.colorScheme.background)
+                         .statusBarsPadding()
                          .padding(horizontal = 16.dp, vertical = 8.dp),
                      verticalAlignment = Alignment.CenterVertically
                  ) {
@@ -244,7 +246,10 @@ fun HomeScreen(
                  }
             } else {
                 // Custom App Bar
-                Column(modifier = Modifier.background(MaterialTheme.colorScheme.background.copy(alpha = 0.95f))) {
+                Column(modifier = Modifier
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.95f))
+                    .statusBarsPadding()
+                ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()

@@ -3,6 +3,7 @@ package com.threepointogames.movierecap
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,8 +22,7 @@ import kotlinx.serialization.encodeToString
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             com.threepointogames.movierecap.util.AnalyticsManager.initialize(androidx.compose.ui.platform.LocalContext.current)
             // Initialize AdManager

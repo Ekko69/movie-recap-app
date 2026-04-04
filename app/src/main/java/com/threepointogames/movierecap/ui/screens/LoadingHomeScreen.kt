@@ -1,6 +1,7 @@
 package com.threepointogames.movierecap.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +21,7 @@ fun LoadingHomeScreen() {
              Box(
                  modifier = Modifier
                      .fillMaxWidth()
+                     .statusBarsPadding()
                      .padding(16.dp)
                      .height(60.dp)
                      .clip(RoundedCornerShape(8.dp))
