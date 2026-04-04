@@ -11,7 +11,6 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
-import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
@@ -30,8 +29,12 @@ object PurchaseManager {
     private var billingClient: BillingClient? = null
     private var appContext: Context? = null
 
-    // Observed by Compose — recompose automatically when this changes
+    // Observed by Compose — recompose automatically when these change
     var isAdFree by mutableStateOf(false)
+        private set
+
+    // Localized price string fetched from Google Play (e.g. "₱300.00", "$2.99", "€2,99")
+    var productPrice by mutableStateOf("")
         private set
 
     fun initialize(context: Context) {
@@ -47,9 +50,7 @@ object PurchaseManager {
                     purchases?.forEach { handlePurchase(context.applicationContext, it) }
                 }
             }
-            .enablePendingPurchases(
-                PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()
-            )
+            .enablePendingPurchases()
             .build()
 
         connect()
@@ -61,6 +62,7 @@ object PurchaseManager {
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                     Log.d(TAG, "Billing connected — verifying purchases...")
                     queryExistingPurchases()
+                    fetchProductPrice()
                 } else {
                     Log.w(TAG, "Billing setup failed: ${result.debugMessage}")
                 }
@@ -82,6 +84,25 @@ object PurchaseManager {
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                 Log.d(TAG, "Found ${purchases.size} existing purchase(s).")
                 purchases.forEach { handlePurchase(ctx, it) }
+            }
+        }
+    }
+
+    private fun fetchProductPrice() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val params = QueryProductDetailsParams.newBuilder()
+                .setProductList(listOf(
+                    QueryProductDetailsParams.Product.newBuilder()
+                        .setProductId(PRODUCT_ID)
+                        .setProductType(BillingClient.ProductType.INAPP)
+                        .build()
+                ))
+                .build()
+            val (result, detailsList) = billingClient?.queryProductDetails(params) ?: return@launch
+            if (result.responseCode == BillingClient.BillingResponseCode.OK && !detailsList.isNullOrEmpty()) {
+                val price = detailsList[0].oneTimePurchaseOfferDetails?.formattedPrice ?: ""
+                productPrice = price
+                Log.d(TAG, "Product price fetched: $price")
             }
         }
     }

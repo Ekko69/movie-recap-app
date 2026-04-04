@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.TextField
@@ -279,12 +280,11 @@ fun HomeScreen(
                             }
 
                             IconButton(onClick = { showRemoveAdsDialog = true }) {
-                                androidx.compose.foundation.Image(
-                                    painter = androidx.compose.ui.res.painterResource(id = com.threepointogames.movierecap.R.drawable.header_icon),
-                                    contentDescription = "Profile",
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clip(CircleShape)
+                                Icon(
+                                    imageVector = Icons.Default.ShoppingCart,
+                                    contentDescription = "Remove Ads",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(26.dp)
                                 )
                             }
                         }

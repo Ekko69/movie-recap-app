@@ -25,14 +25,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import android.app.Activity
+import android.widget.Toast
+import com.threepointogames.movierecap.util.PurchaseManager
 
 @Composable
 fun UnlockDialog(
     onDismiss: () -> Unit,
-    onUnlock: () -> Unit
+    onUnlock: () -> Unit,
+    onPurchased: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val productPrice = PurchaseManager.productPrice
+    val removeAdsLabel = if (productPrice.isNotEmpty()) "Remove Ads Forever — $productPrice" else "Remove Ads Forever"
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
@@ -143,14 +151,14 @@ fun UnlockDialog(
                 
                 Spacer(modifier = Modifier.height(32.dp))
                 
-                // Button
+                // Watch Ad button
                 Button(
                     onClick = onUnlock,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = com.threepointogames.movierecap.ui.theme.GomoPrimaryPink, // Pink Button
+                        containerColor = com.threepointogames.movierecap.ui.theme.GomoPrimaryPink,
                         contentColor = Color.White
                     ),
                     shape = RoundedCornerShape(28.dp),
@@ -164,6 +172,61 @@ fun UnlockDialog(
                         fontWeight = FontWeight.Bold
                     )
                 }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Divider with label
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Divider(modifier = Modifier.weight(1f), color = Color(0xFF444444))
+                    Text(
+                        text = "  or  ",
+                        color = Color(0xFF888888),
+                        fontSize = 12.sp
+                    )
+                    Divider(modifier = Modifier.weight(1f), color = Color(0xFF444444))
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Remove Ads purchase button
+                OutlinedButton(
+                    onClick = {
+                        val activity = context as? Activity
+                        if (activity != null) {
+                            PurchaseManager.launchPurchaseFlow(activity) { errorMsg ->
+                                Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                            }
+                            onDismiss()
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(28.dp),
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        com.threepointogames.movierecap.ui.theme.GomoPrimaryPink
+                    )
+                ) {
+                    Text(
+                        text = removeAdsLabel,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = com.threepointogames.movierecap.ui.theme.GomoPrimaryPink
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "One-time purchase · No banners · No interruptions · Forever",
+                    fontSize = 11.sp,
+                    color = Color(0xFF666666),
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }
