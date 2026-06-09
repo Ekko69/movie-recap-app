@@ -10,10 +10,13 @@ import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.gms.ads.rewarded.RewardedAd
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 
 object AdManager {
     private const val TAG = "AdManager"
     private const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-2958975586761098/7877855823"
+    private const val REWARDED_AD_UNIT_ID = "ca-app-pub-2958975586761098/2868273625"
     
     // Rate Limiting Config
     private const val RATE_LIMIT_DURATION_MS = 60_000L // 60 seconds
@@ -21,7 +24,10 @@ object AdManager {
     
     private var interstitialAd: InterstitialAd? = null
     private var isAdLoading = false
-    
+
+    private var rewardedAd: RewardedAd? = null
+    private var isRewardedAdLoading = false
+
     // Timestamp history of shown ads
     private val adShownTimestamps = mutableListOf<Long>()
 
@@ -81,11 +87,89 @@ object AdManager {
         return isUnderLimit
     }
     
+    fun loadRewarded(context: Context) {
+        if (PurchaseManager.isAdFree) return
+        if (isRewardedAdLoading) return
+        if (rewardedAd != null) return
+
+        isRewardedAdLoading = true
+        val adRequest = AdRequest.Builder().build()
+
+        RewardedAd.load(
+            context,
+            REWARDED_AD_UNIT_ID,
+            adRequest,
+            object : RewardedAdLoadCallback() {
+                override fun onAdFailedToLoad(adError: LoadAdError) {
+                    Log.d(TAG, "Rewarded ad failed to load: ${adError.message}")
+                    rewardedAd = null
+                    isRewardedAdLoading = false
+                }
+
+                override fun onAdLoaded(ad: RewardedAd) {
+                    Log.d(TAG, "Rewarded ad loaded successfully.")
+                    rewardedAd = ad
+                    isRewardedAdLoading = false
+                }
+            }
+        )
+    }
+
+    fun isRewardedAdReady(): Boolean = rewardedAd != null
+
+    fun showRewarded(
+        activity: Activity,
+        onRewarded: () -> Unit,
+        onDismissed: () -> Unit
+    ) {
+        if (PurchaseManager.isAdFree) {
+            onRewarded()
+            return
+        }
+
+        val ad = rewardedAd
+        if (ad == null) {
+            Log.d(TAG, "showRewarded: Ad not ready. Triggering load.")
+            loadRewarded(activity)
+            onDismissed()
+            return
+        }
+
+        var rewardEarned = false
+        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdDismissedFullScreenContent() {
+                Log.d(TAG, "Rewarded ad dismissed.")
+                rewardedAd = null
+                loadRewarded(activity)
+                if (!rewardEarned) onDismissed()
+            }
+
+            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                Log.d(TAG, "Rewarded ad failed to show: ${adError.message}")
+                rewardedAd = null
+                onDismissed()
+            }
+
+            override fun onAdShowedFullScreenContent() {
+                Log.d(TAG, "Rewarded ad showed fullscreen content.")
+                rewardedAd = null
+            }
+        }
+
+        ad.show(activity) { _ ->
+            Log.d(TAG, "User earned reward.")
+            rewardEarned = true
+            onRewarded()
+        }
+    }
+
     // reset control if needed manually (for debug)
     fun resetAdsControl() {
         adShownTimestamps.clear()
         interstitialAd = null
         isAdLoading = false
+        rewardedAd = null
+        isRewardedAdLoading = false
         Log.d(TAG, "Ads control reset.")
     }
 

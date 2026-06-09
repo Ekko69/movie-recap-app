@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity() {
             com.threepointogames.movierecap.util.AnalyticsManager.initialize(androidx.compose.ui.platform.LocalContext.current)
             // Initialize AdManager
             com.threepointogames.movierecap.util.AdManager.loadInterstitial(this)
+            com.threepointogames.movierecap.util.AdManager.loadRewarded(this)
             
             MovieRecapTheme {
                 val navController = rememberNavController()

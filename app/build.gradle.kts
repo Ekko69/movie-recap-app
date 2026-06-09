@@ -13,8 +13,8 @@ android {
         applicationId = "com.threepointogames.movierecap"
         minSdk = 24
         targetSdk = 35
-        versionCode = 15
-        versionName = "1.6"
+        versionCode = 16
+        versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

@@ -373,24 +373,28 @@ fun DetailScreen(
                 showUnlockDialog = false
                 val activity = context as? android.app.Activity
                 if (activity != null) {
-                    com.threepointogames.movierecap.util.AdManager.showInterstitial(activity) {
-                        // After Ad (or if failed), Start Video Logic
-                        com.threepointogames.movierecap.util.AnalyticsManager.logVideoStart(
-                            movie.id,
-                            movie.title
-                        )
-                        com.threepointogames.movierecap.util.WatchHistoryManager.saveMovieId(
-                           activity,
-                            movie.id
-                        )
-                        isVideoVisible = true
-                        isPlayerPlaying = true
-                        // Enter fullscreen if triggered from fullscreen button
-                        if (shouldEnterFullscreenAfterAd) {
-                            isFullscreen = true
+                    com.threepointogames.movierecap.util.AdManager.showRewarded(
+                        activity,
+                        onRewarded = {
+                            com.threepointogames.movierecap.util.AnalyticsManager.logVideoStart(
+                                movie.id,
+                                movie.title
+                            )
+                            com.threepointogames.movierecap.util.WatchHistoryManager.saveMovieId(
+                                activity,
+                                movie.id
+                            )
+                            isVideoVisible = true
+                            isPlayerPlaying = true
+                            if (shouldEnterFullscreenAfterAd) {
+                                isFullscreen = true
+                                shouldEnterFullscreenAfterAd = false
+                            }
+                        },
+                        onDismissed = {
                             shouldEnterFullscreenAfterAd = false
                         }
-                    }
+                    )
                 }
             }
         )
@@ -553,10 +557,10 @@ fun DetailScreen(
                             onClick = {
                                 if (!isVideoVisible) {
                                     // Check Ad Readiness
-                                    if (com.threepointogames.movierecap.util.AdManager.isAdReady()) {
+                                    if (com.threepointogames.movierecap.util.AdManager.isRewardedAdReady()) {
                                         showUnlockDialog = true
                                     } else {
-                                        // No Ad ready (or rate limit), play directly
+                                        // No Ad ready, play directly
                                         com.threepointogames.movierecap.util.AnalyticsManager.logVideoStart(
                                             movie.id,
                                             movie.title
@@ -618,11 +622,11 @@ fun DetailScreen(
                                 // Fullscreen Button Click - Check for Ad
                                 if (!isVideoVisible) {
                                     // Check Ad Readiness
-                                    if (com.threepointogames.movierecap.util.AdManager.isAdReady()) {
+                                    if (com.threepointogames.movierecap.util.AdManager.isRewardedAdReady()) {
                                         shouldEnterFullscreenAfterAd = true
                                         showUnlockDialog = true
                                     } else {
-                                        // No Ad ready (or rate limit), enter fullscreen directly
+                                        // No Ad ready, enter fullscreen directly
                                         com.threepointogames.movierecap.util.AnalyticsManager.logVideoStart(
                                             movie.id,
                                             movie.title

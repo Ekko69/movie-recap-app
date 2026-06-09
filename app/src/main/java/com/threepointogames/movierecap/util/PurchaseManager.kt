@@ -69,7 +69,8 @@ object PurchaseManager {
             }
 
             override fun onBillingServiceDisconnected() {
-                Log.w(TAG, "Billing disconnected.")
+                Log.w(TAG, "Billing disconnected — reconnecting...")
+                connect()
             }
         })
     }
