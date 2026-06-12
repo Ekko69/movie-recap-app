@@ -25,6 +25,8 @@ object PurchaseManager {
     const val PRODUCT_ID = "remove_ads_lifetime"
     private const val PREFS_NAME = "purchase_prefs"
     private const val PREF_KEY_AD_FREE = "ad_free_purchased"
+    const val PRODUCT_ID_DOWNLOADS = "unlimited_downloads_lifetime"
+    private const val PREF_KEY_UNLIMITED_DOWNLOADS = "unlimited_downloads_purchased"
 
     private var billingClient: BillingClient? = null
     private var appContext: Context? = null
@@ -37,12 +39,20 @@ object PurchaseManager {
     var productPrice by mutableStateOf("")
         private set
 
+    var isUnlimitedDownloads by mutableStateOf(false)
+        private set
+
+    var productPriceDownloads by mutableStateOf("")
+        private set
+
     fun initialize(context: Context) {
         appContext = context.applicationContext
 
         // Restore from local cache immediately so the UI is correct on launch
         isAdFree = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .getBoolean(PREF_KEY_AD_FREE, false)
+        isUnlimitedDownloads = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(PREF_KEY_UNLIMITED_DOWNLOADS, false)
 
         billingClient = BillingClient.newBuilder(context.applicationContext)
             .setListener { billingResult, purchases ->
@@ -96,20 +106,31 @@ object PurchaseManager {
                     QueryProductDetailsParams.Product.newBuilder()
                         .setProductId(PRODUCT_ID)
                         .setProductType(BillingClient.ProductType.INAPP)
+                        .build(),
+                    QueryProductDetailsParams.Product.newBuilder()
+                        .setProductId(PRODUCT_ID_DOWNLOADS)
+                        .setProductType(BillingClient.ProductType.INAPP)
                         .build()
                 ))
                 .build()
             val (result, detailsList) = billingClient?.queryProductDetails(params) ?: return@launch
             if (result.responseCode == BillingClient.BillingResponseCode.OK && !detailsList.isNullOrEmpty()) {
-                val price = detailsList[0].oneTimePurchaseOfferDetails?.formattedPrice ?: ""
-                productPrice = price
-                Log.d(TAG, "Product price fetched: $price")
+                detailsList.forEach { details ->
+                    val price = details.oneTimePurchaseOfferDetails?.formattedPrice ?: ""
+                    when (details.productId) {
+                        PRODUCT_ID -> productPrice = price
+                        PRODUCT_ID_DOWNLOADS -> productPriceDownloads = price
+                    }
+                    Log.d(TAG, "Price fetched for ${details.productId}: $price")
+                }
             }
         }
     }
 
     private fun handlePurchase(context: Context, purchase: Purchase) {
-        if (!purchase.products.contains(PRODUCT_ID)) return
+        val isRemoveAds = purchase.products.contains(PRODUCT_ID)
+        val isUnlimitedDL = purchase.products.contains(PRODUCT_ID_DOWNLOADS)
+        if (!isRemoveAds && !isUnlimitedDL) return
         if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) return
 
         if (!purchase.isAcknowledged) {
@@ -120,7 +141,8 @@ object PurchaseManager {
                 Log.d(TAG, "Acknowledge result: ${result.responseCode}")
             }
         }
-        setAdFree(context, true)
+        if (isRemoveAds) setAdFree(context, true)
+        if (isUnlimitedDL) setUnlimitedDownloads(context, true)
     }
 
     private fun setAdFree(context: Context, value: Boolean) {
@@ -130,6 +152,55 @@ object PurchaseManager {
             .putBoolean(PREF_KEY_AD_FREE, value)
             .apply()
         Log.d(TAG, "Ad-free set to: $value")
+    }
+
+    private fun setUnlimitedDownloads(context: Context, value: Boolean) {
+        isUnlimitedDownloads = value
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(PREF_KEY_UNLIMITED_DOWNLOADS, value)
+            .apply()
+        Log.d(TAG, "Unlimited downloads set to: $value")
+    }
+
+    /**
+     * Launch the Google Play purchase sheet for unlimited downloads.
+     * [onError] is called on the main thread if the flow cannot start.
+     */
+    fun launchDownloadsPurchaseFlow(activity: Activity, onError: (String) -> Unit) {
+        if (isUnlimitedDownloads) {
+            onError("You already have unlimited downloads!")
+            return
+        }
+        if (billingClient?.isReady != true) {
+            connect()
+            onError("Connecting to Google Play… Please try again in a moment.")
+            return
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            val params = QueryProductDetailsParams.newBuilder()
+                .setProductList(listOf(
+                    QueryProductDetailsParams.Product.newBuilder()
+                        .setProductId(PRODUCT_ID_DOWNLOADS)
+                        .setProductType(BillingClient.ProductType.INAPP)
+                        .build()
+                ))
+                .build()
+            val (billingResult, productDetailsList) = billingClient!!.queryProductDetails(params)
+            if (billingResult.responseCode != BillingClient.BillingResponseCode.OK || productDetailsList.isNullOrEmpty()) {
+                Log.e(TAG, "Downloads product query failed: ${billingResult.debugMessage}")
+                activity.runOnUiThread { onError("Product not available. Check your connection and try again.") }
+                return@launch
+            }
+            val flowParams = BillingFlowParams.newBuilder()
+                .setProductDetailsParamsList(listOf(
+                    BillingFlowParams.ProductDetailsParams.newBuilder()
+                        .setProductDetails(productDetailsList[0])
+                        .build()
+                ))
+                .build()
+            activity.runOnUiThread { billingClient?.launchBillingFlow(activity, flowParams) }
+        }
     }
 
     /**

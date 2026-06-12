@@ -79,8 +79,7 @@ object DownloadManager {
 
         val ctx = appContext ?: return
 
-        // TODO Task 2: replace with PurchaseManager.isUnlimitedDownloads when available
-        if (downloadCount >= FREE_LIMIT) {
+        if (!PurchaseManager.isUnlimitedDownloads && downloadCount >= FREE_LIMIT) {
             onLimitReached()
             return
         }
