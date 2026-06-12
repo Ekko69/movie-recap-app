@@ -13,7 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.threepointogames.movierecap.util.DownloadManager
+import com.threepointogames.movierecap.util.PurchaseManager
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -44,7 +47,8 @@ fun MovieCard(
     movie: Movie,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    size: MovieCardSize = MovieCardSize.LANDSCAPE
+    size: MovieCardSize = MovieCardSize.LANDSCAPE,
+    onDownloadClick: ((Movie) -> Unit)? = null
 ) {
     val cardWidth = when (size) {
         MovieCardSize.LANDSCAPE -> 280.dp
@@ -140,6 +144,42 @@ fun MovieCard(
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = Color.White
                     )
+                }
+
+                // Download icon overlay — only shown when caller provides onDownloadClick
+                if (onDownloadClick != null) {
+                    val isDownloaded = DownloadManager.isDownloaded(movie.id)
+                    val isDownloading = DownloadManager.downloadProgress.containsKey(movie.id)
+                    val limitReached = !PurchaseManager.isUnlimitedDownloads
+                            && DownloadManager.downloadCount >= DownloadManager.FREE_LIMIT
+                            && !isDownloaded
+
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(6.dp)
+                            .background(
+                                Color.Black.copy(alpha = 0.75f),
+                                CircleShape
+                            )
+                            .size(28.dp)
+                            .clickable { if (!isDownloaded && !isDownloading) onDownloadClick(movie) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        val iconText = when {
+                            isDownloaded -> "✓"
+                            limitReached -> "🔒"
+                            isDownloading -> "↻"
+                            else -> "⬇"
+                        }
+                        val iconColor = when {
+                            isDownloaded -> Color(0xFF4ADE80)
+                            limitReached -> Color.Gray
+                            isDownloading -> Color.Gray
+                            else -> Color.White
+                        }
+                        Text(iconText, fontSize = 13.sp, color = iconColor, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
 
