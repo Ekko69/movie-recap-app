@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("category/${category}")
                             },
                             onDownloadsSeeAllClick = {
-                                navController.navigate("category/My Downloads")
+                                navController.navigate("downloads")
                             }
                         )
                     }
@@ -103,16 +103,13 @@ class MainActivity : ComponentActivity() {
                     ) { backStackEntry ->
                         val categoryName = backStackEntry.arguments?.getString("categoryName") ?: "Movies"
                         val context = androidx.compose.ui.platform.LocalContext.current
-                        val categoryMovies = remember(allMovies, categoryName, com.threepointogames.movierecap.util.DownloadManager.downloadedMovieIds.toList()) {
+                        val categoryMovies = remember(allMovies, categoryName) {
                             if (categoryName == "Recently Watched") {
                                 val historyIds = com.threepointogames.movierecap.util.WatchHistoryManager.getWatchedMovieIds(context)
                                 allMovies.filter { it.id in historyIds }
                                     .sortedBy { historyIds.indexOf(it.id) }
                             } else if (categoryName == "Recently Added") {
                                 allMovies.sortedByDescending { it.updatedAt ?: 0L }
-                            } else if (categoryName == "My Downloads") {
-                                com.threepointogames.movierecap.util.DownloadManager.downloadedMovieIds
-                                    .mapNotNull { id -> allMovies.find { it.id == id } }
                             } else {
                                 allMovies.filter { it.categories.contains(categoryName) }
                             }
