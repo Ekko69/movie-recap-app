@@ -28,7 +28,9 @@ class MainActivity : ComponentActivity() {
             // Initialize AdManager
             com.threepointogames.movierecap.util.AdManager.loadInterstitial(this)
             com.threepointogames.movierecap.util.AdManager.loadRewarded(this)
-            
+            com.threepointogames.movierecap.util.DownloadManager.initialize(this)
+            com.threepointogames.movierecap.util.PurchaseManager.initialize(this)
+
             MovieRecapTheme {
                 val navController = rememberNavController()
                 
@@ -93,6 +95,16 @@ class MainActivity : ComponentActivity() {
                                 com.threepointogames.movierecap.util.AdManager.showInterstitial(this@MainActivity) {
                                     navController.navigate("details")
                                 }
+                            },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                    composable("downloads") {
+                        com.threepointogames.movierecap.ui.screens.DownloadsScreen(
+                            allMovies = allMovies,
+                            onMovieClick = { movie ->
+                                selectedMovie = movie
+                                navController.navigate("details")
                             },
                             onBack = { navController.popBackStack() }
                         )
