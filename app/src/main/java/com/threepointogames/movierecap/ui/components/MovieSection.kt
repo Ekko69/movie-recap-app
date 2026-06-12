@@ -35,7 +35,8 @@ fun MovieSection(
     isInfinite: Boolean = false,
     maxItems: Int? = null,
     onSeeAllClick: (() -> Unit)? = null,
-    cardSize: MovieCardSize = MovieCardSize.LANDSCAPE
+    cardSize: MovieCardSize = MovieCardSize.LANDSCAPE,
+    onDownloadClick: ((Movie) -> Unit)? = null
 ) {
     if (movies.isEmpty()) return
 
@@ -79,9 +80,10 @@ fun MovieSection(
                      itemContent = { index ->
                          val movie = movies[index % movies.size]
                          MovieCard(
-                             movie = movie, 
+                             movie = movie,
                              onClick = { onMovieClick(movie) },
-                             size = cardSize
+                             size = cardSize,
+                             onDownloadClick = onDownloadClick?.let { cb -> { m: Movie -> cb(m) } }
                          )
                      }
                  )
@@ -89,9 +91,10 @@ fun MovieSection(
                 val displayMovies = if (maxItems != null) movies.take(maxItems) else movies
                 items(displayMovies) { movie ->
                     MovieCard(
-                        movie = movie, 
+                        movie = movie,
                         onClick = { onMovieClick(movie) },
-                        size = cardSize
+                        size = cardSize,
+                        onDownloadClick = onDownloadClick?.let { cb -> { m: Movie -> cb(m) } }
                     )
                 }
             }

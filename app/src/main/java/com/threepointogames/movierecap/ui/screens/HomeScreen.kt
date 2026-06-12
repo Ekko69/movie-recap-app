@@ -50,7 +50,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.widget.Toast
 import com.threepointogames.movierecap.data.MovieRepository
+import com.threepointogames.movierecap.ui.components.DownloadLimitDialog
+import com.threepointogames.movierecap.util.DownloadManager
+import com.threepointogames.movierecap.util.PurchaseManager
 import com.threepointogames.movierecap.model.Movie
 import com.threepointogames.movierecap.ui.components.MovieCardSize
 import com.threepointogames.movierecap.ui.components.MovieSection
@@ -60,7 +64,8 @@ fun HomeScreen(
     movies: List<Movie>,
     onMovieClick: (Movie) -> Unit,
     onSeeAllClick: () -> Unit,
-    onCategorySeeAllClick: (String) -> Unit
+    onCategorySeeAllClick: (String) -> Unit,
+    onDownloadsSeeAllClick: () -> Unit
 ) {
     // Extract unique categories from all movies and sort with "Top Picks" first
     // Deduplicate movies into categories (Smart Distribution)
@@ -103,6 +108,7 @@ fun HomeScreen(
     var isSearchActive by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     var showRemoveAdsDialog by remember { mutableStateOf(false) }
+    var showDownloadLimitDialogFor by remember { mutableStateOf<Movie?>(null) }
 
     // Analytics: Log Screen View
     val context = LocalContext.current
@@ -131,6 +137,10 @@ fun HomeScreen(
     
     val favoriteMovies = remember(movies, favoriteIds) {
         movies.filter { it.id in favoriteIds }
+    }
+
+    val downloadedMovies = remember(DownloadManager.downloadedMovieIds.toList(), movies) {
+        DownloadManager.downloadedMovieIds.mapNotNull { id -> movies.find { it.id == id } }
     }
 
     // 10-second rotation for Hero Movie
@@ -302,6 +312,22 @@ fun HomeScreen(
             )
         }
 
+        // Download limit dialog
+        showDownloadLimitDialogFor?.let {
+            DownloadLimitDialog(
+                onDismiss = { showDownloadLimitDialogFor = null },
+                onUnlock = {
+                    showDownloadLimitDialogFor = null
+                    val activity = context as? android.app.Activity
+                    activity?.let { act ->
+                        PurchaseManager.launchDownloadsPurchaseFlow(act) { msg ->
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            )
+        }
+
         if (!isSearchActive) {
             LazyColumn(
                 modifier = Modifier
@@ -348,14 +374,21 @@ fun HomeScreen(
                     MovieSection(
                         title = category,
                         movies = categoryMovies,
-                        onMovieClick = { movie -> 
+                        onMovieClick = { movie ->
                             com.threepointogames.movierecap.util.AnalyticsManager.logMovieClick(movie.id, movie.title)
-                            onMovieClick(movie) 
+                            onMovieClick(movie)
                         },
                         isInfinite = true,
                         cardSize = cardSize,
                         onSeeAllClick = {
-                             onCategorySeeAllClick(category)
+                            onCategorySeeAllClick(category)
+                        },
+                        onDownloadClick = { movie ->
+                            DownloadManager.downloadMovie(
+                                movie = movie,
+                                onLimitReached = { showDownloadLimitDialogFor = movie },
+                                onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
+                            )
                         }
                     )
                 }
@@ -373,7 +406,14 @@ fun HomeScreen(
                                  isInfinite = true,
                                  cardSize = MovieCardSize.LANDSCAPE,
                                  onSeeAllClick = {
-                                      onCategorySeeAllClick("Recently Added")
+                                     onCategorySeeAllClick("Recently Added")
+                                 },
+                                 onDownloadClick = { movie ->
+                                     DownloadManager.downloadMovie(
+                                         movie = movie,
+                                         onLimitReached = { showDownloadLimitDialogFor = movie },
+                                         onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
+                                     )
                                  }
                              )
                          }
@@ -397,7 +437,14 @@ fun HomeScreen(
                         onSeeAllClick = {
                             onCategorySeeAllClick("Favorites")
                         },
-                        cardSize = MovieCardSize.LANDSCAPE
+                        cardSize = MovieCardSize.LANDSCAPE,
+                        onDownloadClick = { movie ->
+                            DownloadManager.downloadMovie(
+                                movie = movie,
+                                onLimitReached = { showDownloadLimitDialogFor = movie },
+                                onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
+                            )
+                        }
                     )
                 }
             }
@@ -418,11 +465,42 @@ fun HomeScreen(
                         onSeeAllClick = {
                             onCategorySeeAllClick("Recently Watched")
                         },
-                        cardSize = MovieCardSize.LANDSCAPE
+                        cardSize = MovieCardSize.LANDSCAPE,
+                        onDownloadClick = { movie ->
+                            DownloadManager.downloadMovie(
+                                movie = movie,
+                                onLimitReached = { showDownloadLimitDialogFor = movie },
+                                onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
+                            )
+                        }
                     )
                 }
             }
             
+            // My Downloads Section
+            if (downloadedMovies.isNotEmpty()) {
+                item {
+                    MovieSection(
+                        title = "My Downloads",
+                        movies = downloadedMovies,
+                        onMovieClick = { movie ->
+                            com.threepointogames.movierecap.util.AnalyticsManager.logMovieClick(movie.id, movie.title)
+                            onMovieClick(movie)
+                        },
+                        isInfinite = false,
+                        cardSize = MovieCardSize.LANDSCAPE,
+                        onSeeAllClick = { onDownloadsSeeAllClick() },
+                        onDownloadClick = { movie ->
+                            DownloadManager.downloadMovie(
+                                movie = movie,
+                                onLimitReached = { showDownloadLimitDialogFor = movie },
+                                onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
+                            )
+                        }
+                    )
+                }
+            }
+
             // Add "All Movies" section at the end
             item {
                 MovieSection(
@@ -436,6 +514,13 @@ fun HomeScreen(
                     onSeeAllClick = {
                         com.threepointogames.movierecap.util.AnalyticsManager.logCategoryView("All Movies Bottom")
                         onSeeAllClick()
+                    },
+                    onDownloadClick = { movie ->
+                        DownloadManager.downloadMovie(
+                            movie = movie,
+                            onLimitReached = { showDownloadLimitDialogFor = movie },
+                            onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
+                        )
                     }
                 )
             }
