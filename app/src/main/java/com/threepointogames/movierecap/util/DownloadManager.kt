@@ -2,15 +2,14 @@ package com.threepointogames.movierecap.util
 
 import android.content.Context
 import android.net.Uri
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.mutableStateListOf
 import com.threepointogames.movierecap.model.Movie
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
@@ -31,6 +30,8 @@ object DownloadManager {
     // Compose-observable state — UI recomposes automatically when these change
     val downloadedMovieIds: SnapshotStateList<String> = mutableStateListOf()
     val downloadProgress = mutableStateMapOf<String, Int>()  // movieId → 0..100
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val activeJobs = mutableMapOf<String, Job>()
 
     fun initialize(context: Context) {
         appContext = context.applicationContext
@@ -84,7 +85,7 @@ object DownloadManager {
             return
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
+        activeJobs[movie.id] = scope.launch {
             val dir = ctx.getExternalFilesDir("downloads") ?: run {
                 withContext(Dispatchers.Main) { onError("Storage not available") }
                 return@launch
@@ -95,8 +96,10 @@ object DownloadManager {
 
             try {
                 val conn = URL(movie.videoURL).openConnection() as HttpURLConnection
+                conn.connectTimeout = 15_000
+                conn.readTimeout = 30_000
                 conn.connect()
-                val total = conn.contentLength.toLong()
+                val total = conn.contentLengthLong
 
                 conn.inputStream.use { input ->
                     FileOutputStream(file).use { output ->
@@ -141,6 +144,8 @@ object DownloadManager {
 
     fun deleteDownload(movieId: String) {
         val ctx = appContext ?: return
+        activeJobs.remove(movieId)?.cancel()
+        downloadProgress.remove(movieId)
         val paths = loadPaths(ctx)
         paths[movieId]?.let { File(it).delete() }
         saveIds(ctx, loadIds(ctx).toMutableList().also { it.remove(movieId) })
