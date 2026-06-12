@@ -123,12 +123,14 @@ object DownloadManager {
                 savePaths(ctx, updatedPaths)
 
                 withContext(Dispatchers.Main) {
+                    activeJobs.remove(movie.id)
                     downloadProgress.remove(movie.id)
                     if (movie.id !in downloadedMovieIds) downloadedMovieIds.add(0, movie.id)
                 }
             } catch (e: Exception) {
                 file.delete()
                 withContext(Dispatchers.Main) {
+                    activeJobs.remove(movie.id)
                     downloadProgress.remove(movie.id)
                     val msg = when {
                         e.message?.contains("space", ignoreCase = true) == true -> "Not enough storage space"
