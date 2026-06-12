@@ -81,6 +81,8 @@ import com.threepointogames.movierecap.ui.components.VideoPlayer
 import com.threepointogames.movierecap.model.Comment
 import com.threepointogames.movierecap.util.UserManager
 import com.threepointogames.movierecap.data.MovieRepository
+import com.threepointogames.movierecap.ui.components.DownloadButton
+import com.threepointogames.movierecap.util.DownloadManager
 
 @Composable
 fun DetailScreen(
@@ -173,6 +175,13 @@ fun DetailScreen(
     }
 
     val context = LocalContext.current
+    // Use local file when downloaded, otherwise stream remote URL
+    val isDownloaded = DownloadManager.isDownloaded(movie.id)
+    val videoUri = if (isDownloaded) {
+        DownloadManager.getLocalUri(movie.id)?.toString() ?: movie.videoURL
+    } else {
+        movie.videoURL
+    }
     var isFullscreen by remember { mutableStateOf(false) }
     var isVideoVisible by remember { mutableStateOf(false) }
     var isPlayerPlaying by remember { mutableStateOf(false) }
@@ -269,12 +278,12 @@ fun DetailScreen(
     }
 
     // 2. Configure Player with Subtitles (Re-run when offset changes)
-    LaunchedEffect(movie.videoURL, rawSubtitleContent, subtitleOffset) {
+    LaunchedEffect(videoUri, rawSubtitleContent, subtitleOffset) {
         val currentPos = exoPlayer.currentPosition
         val wasPlaying = exoPlayer.isPlaying
 
         val mediaItemBuilder = MediaItem.Builder()
-            .setUri(movie.videoURL)
+            .setUri(videoUri)
 
         if (rawSubtitleContent != null) {
             try {
@@ -699,6 +708,13 @@ fun DetailScreen(
 
 
                     }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    DownloadButton(
+                        movie = movie,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
