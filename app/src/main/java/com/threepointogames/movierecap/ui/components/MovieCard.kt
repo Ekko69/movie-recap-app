@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.threepointogames.movierecap.util.DownloadManager
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -148,8 +150,37 @@ fun MovieCard(
                 // Download icon overlay — only shown when caller provides onDownloadClick
                 if (onDownloadClick != null) {
                     val isDownloaded = DownloadManager.isDownloaded(movie.id)
-                    val isDownloading = DownloadManager.downloadProgress.containsKey(movie.id)
+                    val progress = DownloadManager.downloadProgress[movie.id]
+                    val isDownloading = progress != null
 
+                    // Full-thumbnail downloading overlay
+                    if (isDownloading) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black.copy(alpha = 0.6f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                CircularProgressIndicator(
+                                    progress = (progress ?: 0) / 100f,
+                                    color = Color(0xFF4ADE80),
+                                    trackColor = Color.White.copy(alpha = 0.25f),
+                                    modifier = Modifier.size(36.dp),
+                                    strokeWidth = 3.dp
+                                )
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    "Downloading...",
+                                    fontSize = 10.sp,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+
+                    // Small icon button (bottom-left)
                     Box(
                         modifier = Modifier
                             .align(Alignment.BottomStart)
