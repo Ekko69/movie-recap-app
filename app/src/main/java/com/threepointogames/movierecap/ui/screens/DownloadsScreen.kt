@@ -61,7 +61,9 @@ fun DownloadsScreen(
     val isPremium = PurchaseManager.isUnlimitedDownloads
     val downloadedIds = DownloadManager.downloadedMovieIds.toList()
     val downloadedMovies = remember(downloadedIds, allMovies) {
-        downloadedIds.mapNotNull { id -> allMovies.find { it.id == id } }
+        downloadedIds.mapNotNull { id ->
+            allMovies.find { it.id == id } ?: DownloadManager.getSavedMovie(id)
+        }
     }
     var showUpgradeDialog by remember { mutableStateOf(false) }
 

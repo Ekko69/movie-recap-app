@@ -47,13 +47,16 @@ class MainActivity : ComponentActivity() {
                 val repository = remember { com.threepointogames.movierecap.data.MovieRepository(context) }
                 // Load and shuffle ONCE
                 var allMovies by remember { mutableStateOf<List<Movie>>(emptyList()) }
-                
+                var isLoadingMovies by remember { mutableStateOf(true) }
+
                 androidx.compose.runtime.LaunchedEffect(Unit) {
                     try {
                         val loaded = repository.getMovies().shuffled()
                         allMovies = loaded
                     } catch (e: Exception) {
                         e.printStackTrace()
+                    } finally {
+                        isLoadingMovies = false
                     }
                 }
 
@@ -62,7 +65,8 @@ class MainActivity : ComponentActivity() {
                 NavHost(navController = navController, startDestination = "home") {
                     composable("home") {
                         HomeScreen(
-                            movies = allMovies, // Pass the stable list
+                            movies = allMovies,
+                            isLoading = isLoadingMovies,
                             onMovieClick = { movie ->
                                 selectedMovie = movie
                                 com.threepointogames.movierecap.util.AdManager.showInterstitial(this@MainActivity) {

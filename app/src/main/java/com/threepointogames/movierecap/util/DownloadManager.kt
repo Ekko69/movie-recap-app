@@ -23,6 +23,7 @@ object DownloadManager {
     private const val PREFS_NAME = "download_prefs"
     private const val KEY_IDS = "downloaded_movie_ids"
     private const val KEY_PATHS = "downloaded_file_paths"
+    private const val KEY_METADATA = "downloaded_movie_metadata"
     const val FREE_LIMIT = 3
 
     private var appContext: Context? = null
@@ -42,6 +43,9 @@ object DownloadManager {
         if (validIds.size != ids.size) {
             saveIds(context, validIds)
             savePaths(context, paths.filter { (id, _) -> id in validIds })
+            prefs(context).edit()
+                .putString(KEY_METADATA, Json.encodeToString(loadMetadata(context).filter { (id, _) -> id in validIds }))
+                .apply()
         }
         downloadedMovieIds.clear()
         downloadedMovieIds.addAll(validIds)
@@ -56,6 +60,17 @@ object DownloadManager {
         val path = loadPaths(ctx)[movieId] ?: return null
         val file = File(path)
         return if (file.exists()) Uri.fromFile(file) else null
+    }
+
+    fun getSavedMovie(movieId: String): Movie? {
+        val ctx = appContext ?: return null
+        return loadMetadata(ctx)[movieId]
+    }
+
+    fun getDownloadedMovies(): List<Movie> {
+        val ctx = appContext ?: return emptyList()
+        val metadata = loadMetadata(ctx)
+        return downloadedMovieIds.mapNotNull { metadata[it] }
     }
 
     fun getFileSizeFormatted(movieId: String): String {
@@ -116,11 +131,13 @@ object DownloadManager {
                     }
                 }
 
-                // Persist
+                // Persist file path, IDs, and movie metadata (for offline access)
                 val updatedIds = loadIds(ctx).toMutableList().also { if (movie.id !in it) it.add(0, movie.id) }
                 val updatedPaths = loadPaths(ctx).toMutableMap().also { it[movie.id] = file.absolutePath }
+                val updatedMeta = loadMetadata(ctx).toMutableMap().also { it[movie.id] = movie }
                 saveIds(ctx, updatedIds)
                 savePaths(ctx, updatedPaths)
+                prefs(ctx).edit().putString(KEY_METADATA, Json.encodeToString(updatedMeta)).apply()
 
                 withContext(Dispatchers.Main) {
                     activeJobs.remove(movie.id)
@@ -151,6 +168,9 @@ object DownloadManager {
         paths[movieId]?.let { File(it).delete() }
         saveIds(ctx, loadIds(ctx).toMutableList().also { it.remove(movieId) })
         savePaths(ctx, paths.toMutableMap().also { it.remove(movieId) })
+        prefs(ctx).edit()
+            .putString(KEY_METADATA, Json.encodeToString(loadMetadata(ctx).toMutableMap().also { it.remove(movieId) }))
+            .apply()
         downloadedMovieIds.remove(movieId)
     }
 
@@ -174,5 +194,10 @@ object DownloadManager {
 
     private fun savePaths(context: Context, paths: Map<String, String>) {
         prefs(context).edit().putString(KEY_PATHS, Json.encodeToString(paths)).apply()
+    }
+
+    private fun loadMetadata(context: Context): Map<String, Movie> {
+        val json = prefs(context).getString(KEY_METADATA, null) ?: return emptyMap()
+        return try { Json.decodeFromString(json) } catch (e: Exception) { emptyMap() }
     }
 }

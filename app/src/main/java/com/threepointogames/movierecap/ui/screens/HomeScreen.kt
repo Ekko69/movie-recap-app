@@ -65,7 +65,8 @@ fun HomeScreen(
     onMovieClick: (Movie) -> Unit,
     onSeeAllClick: () -> Unit,
     onCategorySeeAllClick: (String) -> Unit,
-    onDownloadsSeeAllClick: () -> Unit
+    onDownloadsSeeAllClick: () -> Unit,
+    isLoading: Boolean = true
 ) {
     // Extract unique categories from all movies and sort with "Top Picks" first
     // Deduplicate movies into categories (Smart Distribution)
@@ -140,7 +141,9 @@ fun HomeScreen(
     }
 
     val downloadedMovies = remember(DownloadManager.downloadedMovieIds.toList(), movies) {
-        DownloadManager.downloadedMovieIds.mapNotNull { id -> movies.find { it.id == id } }
+        DownloadManager.downloadedMovieIds.mapNotNull { id ->
+            movies.find { it.id == id } ?: DownloadManager.getSavedMovie(id)
+        }
     }
 
     // 10-second rotation for Hero Movie
@@ -212,8 +215,15 @@ fun HomeScreen(
 
     }
 
-    if (movies.isEmpty()) {
+    if (movies.isEmpty() && isLoading) {
         LoadingHomeScreen()
+    } else if (movies.isEmpty()) {
+        // Offline with no cached movies — show downloads if available
+        OfflineHomeScreen(
+            downloadedMovies = downloadedMovies,
+            onMovieClick = onMovieClick,
+            onDownloadsSeeAllClick = onDownloadsSeeAllClick
+        )
     } else {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
@@ -565,3 +575,50 @@ fun HomeScreen(
     }
     }
 
+@Composable
+private fun OfflineHomeScreen(
+    downloadedMovies: List<com.threepointogames.movierecap.model.Movie>,
+    onMovieClick: (com.threepointogames.movierecap.model.Movie) -> Unit,
+    onDownloadsSeeAllClick: () -> Unit
+) {
+    androidx.compose.foundation.layout.Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(androidx.compose.material3.MaterialTheme.colorScheme.background)
+            .statusBarsPadding()
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(Modifier.height(40.dp))
+        Text("📡", fontSize = 48.sp)
+        Spacer(Modifier.height(12.dp))
+        Text(
+            "No internet connection",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "Connect to the internet to browse movies.",
+            fontSize = 13.sp,
+            color = Color.Gray,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+
+        if (downloadedMovies.isNotEmpty()) {
+            Spacer(Modifier.height(32.dp))
+            MovieSection(
+                title = "My Downloads",
+                movies = downloadedMovies,
+                onMovieClick = { movie ->
+                    com.threepointogames.movierecap.util.AnalyticsManager.logMovieClick(movie.id, movie.title)
+                    onMovieClick(movie)
+                },
+                isInfinite = false,
+                cardSize = MovieCardSize.LANDSCAPE,
+                onSeeAllClick = { onDownloadsSeeAllClick() }
+            )
+        }
+    }
+}
