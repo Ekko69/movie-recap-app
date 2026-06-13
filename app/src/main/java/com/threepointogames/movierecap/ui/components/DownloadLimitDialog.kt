@@ -1,17 +1,11 @@
 package com.threepointogames.movierecap.ui.components
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,41 +18,45 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.threepointogames.movierecap.R
-import com.threepointogames.movierecap.ui.theme.GomoPrimaryPink
-import com.threepointogames.movierecap.ui.theme.GomoPurpleMid
 import com.threepointogames.movierecap.util.PurchaseManager
-import kotlinx.coroutines.launch
+
+private val Purple = Color(0xFF6D28D9)
+private val PurpleLight = Color(0xFFEDE9FE)
+private val PurpleGradientStart = Color(0xFF8B5CF6)
+private val PurpleGradientEnd = Color(0xFF5B21B6)
+private val TextDark = Color(0xFF111827)
+private val TextMuted = Color(0xFF6B7280)
 
 @Composable
 fun DownloadLimitDialog(
     onDismiss: () -> Unit,
     onUnlock: () -> Unit
 ) {
-    val price = PurchaseManager.productPriceDownloads.ifEmpty { "₱200" }
+    val price = PurchaseManager.productPriceDownloads.ifEmpty { "\$4" }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -68,149 +66,168 @@ fun DownloadLimitDialog(
             usePlatformDefaultWidth = false
         )
     ) {
-        // Entry animations
-        val scale = remember { Animatable(0.8f) }
-        val alpha = remember { Animatable(0f) }
-
-        LaunchedEffect(Unit) {
-            launch { scale.animateTo(1f, animationSpec = spring(dampingRatio = 0.6f, stiffness = 600f)) }
-            launch { alpha.animateTo(1f, animationSpec = tween(300)) }
-        }
-
-        // Pulse animation for icon
-        val infiniteTransition = rememberInfiniteTransition(label = "Pulse")
-        val pulseScale by infiniteTransition.animateFloat(
-            initialValue = 1f,
-            targetValue = 1.15f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(1000, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "PulseScale"
-        )
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.6f * alpha.value))
+                .background(Color.Black.copy(alpha = 0.55f))
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 ) { onDismiss() },
             contentAlignment = Alignment.Center
         ) {
-            Column(
+            Box(
                 modifier = Modifier
-                    .width(320.dp)
-                    .scale(scale.value)
-                    .background(Color(0xFF1E1E1E), RoundedCornerShape(24.dp))
+                    .width(340.dp)
+                    .background(Color.White, RoundedCornerShape(24.dp))
                     .clickable(enabled = false) {}
-                    .padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Pulsing icon
-                Box(contentAlignment = Alignment.Center) {
-                    Box(
-                        modifier = Modifier
-                            .size(100.dp * pulseScale)
-                            .background(
-                                GomoPrimaryPink.copy(alpha = 0.2f),
-                                CircleShape
-                            )
+                // Close button
+                IconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = Color(0xFF9CA3AF),
+                        modifier = Modifier.size(20.dp)
                     )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 32.dp, bottom = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Download icon in light purple circle
                     Box(
                         modifier = Modifier
                             .size(80.dp)
-                            .background(
-                                Brush.radialGradient(listOf(GomoPurpleMid, GomoPrimaryPink)),
-                                CircleShape
-                            ),
+                            .background(PurpleLight, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.download_white),
-                            contentDescription = "Download",
-                            modifier = Modifier.size(38.dp),
-                            colorFilter = ColorFilter.tint(Color.White)
+                            painter = painterResource(R.drawable.ic_download),
+                            contentDescription = null,
+                            modifier = Modifier.size(36.dp),
+                            colorFilter = ColorFilter.tint(Purple)
                         )
                     }
-                }
 
-                Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.height(20.dp))
 
-                Text(
-                    "Download Limit Reached",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(Modifier.height(10.dp))
-
-                Text(
-                    "You've used all 3 free downloads. Upgrade to unlock unlimited offline viewing.",
-                    fontSize = 14.sp,
-                    color = Color(0xFFAAAAAA),
-                    textAlign = TextAlign.Center,
-                    lineHeight = 21.sp
-                )
-
-                Spacer(Modifier.height(24.dp))
-                Divider(color = Color.White.copy(alpha = 0.08f))
-                Spacer(Modifier.height(20.dp))
-
-                // Perks
-                PerkRow(emoji = "⬇️", text = "Unlimited movie downloads")
-                Spacer(Modifier.height(12.dp))
-                PerkRow(emoji = "📱", text = "Watch offline anytime, anywhere")
-                Spacer(Modifier.height(12.dp))
-                PerkRow(emoji = "🎬", text = "All movies included")
-                Spacer(Modifier.height(12.dp))
-                PerkRow(emoji = "♾️", text = "Lifetime access on this device")
-
-                Spacer(Modifier.height(28.dp))
-
-                // Unlock button
-                Button(
-                    onClick = onUnlock,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = GomoPrimaryPink,
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(28.dp),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.download_white),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        colorFilter = ColorFilter.tint(Color.White)
-                    )
-                    Spacer(Modifier.width(8.dp))
+                    // Title: "Unlock" / "UNLIMITED" / "MOVIE DOWNLOADS!"
                     Text(
-                        "Unlock Unlimited — $price",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        "Unlock",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = TextDark
                     )
-                }
+                    Text(
+                        "UNLIMITED",
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Purple,
+                        letterSpacing = 1.sp
+                    )
+                    Text(
+                        "MOVIE DOWNLOADS!",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextDark,
+                        letterSpacing = 0.5.sp
+                    )
 
-                Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(14.dp))
 
-                Text(
-                    "Secure payment via Google Play",
-                    color = Color(0xFF666666),
-                    fontSize = 11.sp,
-                    textAlign = TextAlign.Center
-                )
+                    // Subtitle with purple "No limits!"
+                    Text(
+                        buildAnnotatedString {
+                            withStyle(SpanStyle(color = TextMuted)) {
+                                append("Download as many movies as you want.\nWatch anytime, anywhere. ")
+                            }
+                            withStyle(SpanStyle(color = Purple, fontWeight = FontWeight.Bold)) {
+                                append("No limits!")
+                            }
+                        },
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 21.sp
+                    )
 
-                Spacer(Modifier.height(4.dp))
+                    Spacer(Modifier.height(24.dp))
 
-                TextButton(onClick = onDismiss) {
-                    Text("Maybe Later", color = Color.Gray, fontSize = 13.sp)
+                    // 3 feature icons in a row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        FeatureItem(R.drawable.ic_infinity, "Unlimited\nDownloads")
+                        // Vertical divider
+                        Divider(
+                            modifier = Modifier
+                                .height(64.dp)
+                                .width(1.dp),
+                            color = Color(0xFFE5E7EB)
+                        )
+                        FeatureItem(R.drawable.ic_download, "High Quality\nDownloads")
+                        Divider(
+                            modifier = Modifier
+                                .height(64.dp)
+                                .width(1.dp),
+                            color = Color(0xFFE5E7EB)
+                        )
+                        FeatureItem(R.drawable.ic_phone_outline, "Watch Offline\nAnytime")
+                    }
+
+                    Spacer(Modifier.height(28.dp))
+
+                    // CTA button with purple gradient
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(PurpleGradientStart, PurpleGradientEnd)
+                                ),
+                                RoundedCornerShape(16.dp)
+                            )
+                            .clickable { onUnlock() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "UNLOCK NOW FOR $price",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = 0.5.sp
+                        )
+                    }
+
+                    Spacer(Modifier.height(12.dp))
+
+                    // Footer
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(android.R.drawable.ic_lock_lock),
+                            contentDescription = null,
+                            tint = Purple,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            "Secure payment  •  Instant access",
+                            fontSize = 12.sp,
+                            color = TextMuted
+                        )
+                    }
                 }
             }
         }
@@ -218,17 +235,32 @@ fun DownloadLimitDialog(
 }
 
 @Composable
-private fun PerkRow(emoji: String, text: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
+private fun FeatureItem(iconRes: Int, label: String) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(88.dp)
     ) {
-        Text(text = emoji, fontSize = 18.sp)
-        Spacer(Modifier.width(12.dp))
+        Box(
+            modifier = Modifier
+                .size(52.dp)
+                .border(1.5.dp, Purple, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(iconRes),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                colorFilter = ColorFilter.tint(Purple)
+            )
+        }
+        Spacer(Modifier.height(8.dp))
         Text(
-            text = text,
-            color = Color.LightGray,
-            fontSize = 14.sp
+            label,
+            fontSize = 12.sp,
+            color = TextDark,
+            textAlign = TextAlign.Center,
+            lineHeight = 17.sp,
+            fontWeight = FontWeight.Medium
         )
     }
 }

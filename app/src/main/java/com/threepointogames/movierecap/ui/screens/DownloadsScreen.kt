@@ -136,7 +136,7 @@ fun DownloadsScreen(
                                 horizontal = 12.dp, vertical = 6.dp
                             )
                         ) {
-                            val price = PurchaseManager.productPriceDownloads.ifEmpty { "₱200" }
+                            val price = PurchaseManager.productPriceDownloads.ifEmpty { "$4" }
                             Text(
                                 "⬆ Unlock Unlimited — $price",
                                 fontSize = 11.sp,
