@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.threepointogames.movierecap.util.DownloadManager
-import com.threepointogames.movierecap.util.PurchaseManager
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -150,9 +149,6 @@ fun MovieCard(
                 if (onDownloadClick != null) {
                     val isDownloaded = DownloadManager.isDownloaded(movie.id)
                     val isDownloading = DownloadManager.downloadProgress.containsKey(movie.id)
-                    val limitReached = !PurchaseManager.isUnlimitedDownloads
-                            && DownloadManager.downloadCount >= DownloadManager.FREE_LIMIT
-                            && !isDownloaded
 
                     Box(
                         modifier = Modifier
@@ -166,19 +162,19 @@ fun MovieCard(
                             .clickable { if (!isDownloaded && !isDownloading) onDownloadClick(movie) },
                         contentAlignment = Alignment.Center
                     ) {
-                        val iconText = when {
-                            isDownloaded -> "✓"
-                            limitReached -> "🔒"
-                            isDownloading -> "↻"
-                            else -> "⬇"
-                        }
-                        val iconColor = when {
+                        val iconTint = when {
                             isDownloaded -> Color(0xFF4ADE80)
-                            limitReached -> Color.Gray
                             isDownloading -> Color.Gray
                             else -> Color.White
                         }
-                        Text(iconText, fontSize = 13.sp, color = iconColor, fontWeight = FontWeight.Bold)
+                        androidx.compose.foundation.Image(
+                            painter = androidx.compose.ui.res.painterResource(
+                                id = com.threepointogames.movierecap.R.drawable.download_white
+                            ),
+                            contentDescription = "Download",
+                            modifier = Modifier.size(16.dp),
+                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(iconTint)
+                        )
                     }
                 }
             }

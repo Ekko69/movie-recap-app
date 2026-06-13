@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
@@ -83,11 +85,21 @@ fun DownloadButton(
             contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                val iconTint = if (isDownloading) Color.Gray else Color(0xFF4ADE80)
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(
+                        id = com.threepointogames.movierecap.R.drawable.download_white
+                    ),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(iconTint)
+                )
+                Spacer(Modifier.width(6.dp))
                 Text(
                     text = when {
-                        isDownloaded -> "✓  Downloaded"
-                        isDownloading -> "↻  ${progress}%"
-                        else -> "⬇  Download"
+                        isDownloaded -> "Downloaded"
+                        isDownloading -> "${progress}%"
+                        else -> "Download"
                     },
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
