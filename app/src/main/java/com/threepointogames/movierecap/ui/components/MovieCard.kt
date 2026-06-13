@@ -91,14 +91,17 @@ fun MovieCard(
                     .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.surface)
             ) {
-                // Determine which image to show
-                val imageModel = if (size == MovieCardSize.PORTRAIT && !movie.featuredThumbnail.isNullOrEmpty()) {
+                // Determine which image to show — prefer local cached file when downloaded
+                val localThumb = DownloadManager.getLocalThumbnailUri(movie.id)
+                val imageModel: Any? = if (localThumb != null) {
+                    localThumb
+                } else if (size == MovieCardSize.PORTRAIT && !movie.featuredThumbnail.isNullOrEmpty()) {
                     movie.featuredThumbnail
                 } else {
                     movie.thumbnail
                 }
 
-                if (!imageModel.isNullOrEmpty()) {
+                if (imageModel != null) {
 
                     SubcomposeAsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)

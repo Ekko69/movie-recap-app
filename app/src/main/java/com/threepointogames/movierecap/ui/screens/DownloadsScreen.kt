@@ -217,7 +217,10 @@ private fun DownloadedMovieRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         SubcomposeAsyncImage(
-            model = ImageRequest.Builder(context).data(movie.thumbnail).crossfade(true).build(),
+            model = ImageRequest.Builder(context)
+                .data(DownloadManager.getLocalThumbnailUri(movie.id) ?: movie.thumbnail)
+                .crossfade(true)
+                .build(),
             contentDescription = movie.title,
             modifier = Modifier
                 .size(width = 60.dp, height = 80.dp)
