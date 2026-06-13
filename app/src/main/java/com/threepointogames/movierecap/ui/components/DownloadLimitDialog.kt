@@ -20,10 +20,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -121,13 +121,8 @@ fun DownloadLimitDialog(
 
                     Spacer(Modifier.height(20.dp))
 
-                    // Title: "Unlock" / "UNLIMITED" / "MOVIE DOWNLOADS!"
-                    Text(
-                        "Unlock",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = TextDark
-                    )
+                    // Title
+                    Text("Unlock", fontSize = 20.sp, fontWeight = FontWeight.Normal, color = TextDark)
                     Text(
                         "UNLIMITED",
                         fontSize = 36.sp,
@@ -145,7 +140,7 @@ fun DownloadLimitDialog(
 
                     Spacer(Modifier.height(14.dp))
 
-                    // Subtitle with purple "No limits!"
+                    // Subtitle with "No limits!" in purple
                     Text(
                         buildAnnotatedString {
                             withStyle(SpanStyle(color = TextMuted)) {
@@ -162,26 +157,25 @@ fun DownloadLimitDialog(
 
                     Spacer(Modifier.height(24.dp))
 
-                    // 3 feature icons in a row
+                    // 3 feature items — Box dividers to avoid Divider's fillMaxWidth side effect
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.Top
                     ) {
                         FeatureItem(R.drawable.ic_infinity, "Unlimited\nDownloads")
-                        // Vertical divider
-                        Divider(
+                        Box(
                             modifier = Modifier
-                                .height(64.dp)
-                                .width(1.dp),
-                            color = Color(0xFFE5E7EB)
+                                .width(1.dp)
+                                .height(72.dp)
+                                .background(Color(0xFFE5E7EB))
                         )
                         FeatureItem(R.drawable.ic_download, "High Quality\nDownloads")
-                        Divider(
+                        Box(
                             modifier = Modifier
-                                .height(64.dp)
-                                .width(1.dp),
-                            color = Color(0xFFE5E7EB)
+                                .width(1.dp)
+                                .height(72.dp)
+                                .background(Color(0xFFE5E7EB))
                         )
                         FeatureItem(R.drawable.ic_phone_outline, "Watch Offline\nAnytime")
                     }
@@ -213,13 +207,13 @@ fun DownloadLimitDialog(
 
                     Spacer(Modifier.height(12.dp))
 
-                    // Footer
+                    // Footer with lock icon from our own XML drawable
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(android.R.drawable.ic_lock_lock),
+                        Image(
+                            painter = painterResource(R.drawable.ic_lock),
                             contentDescription = null,
-                            tint = Purple,
-                            modifier = Modifier.size(12.dp)
+                            modifier = Modifier.size(12.dp),
+                            colorFilter = ColorFilter.tint(Purple)
                         )
                         Spacer(Modifier.width(4.dp))
                         Text(

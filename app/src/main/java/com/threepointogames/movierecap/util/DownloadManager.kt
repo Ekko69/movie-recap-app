@@ -18,6 +18,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.ConcurrentHashMap
 
 object DownloadManager {
     private const val PREFS_NAME = "download_prefs"
@@ -35,8 +36,8 @@ object DownloadManager {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val activeJobs = mutableMapOf<String, Job>()
 
-    // In-memory thumbnail path cache — avoids reading SharedPreferences on every recomposition
-    private val thumbPathsCache = mutableMapOf<String, String>()
+    // ConcurrentHashMap: read on main thread (recomposition), written on IO thread (download coroutine)
+    private val thumbPathsCache = ConcurrentHashMap<String, String>()
 
     fun initialize(context: Context) {
         appContext = context.applicationContext
